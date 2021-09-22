@@ -14,6 +14,7 @@ Installs tools not found in apt or pip in `~/ctf-tools` and wordlists in `~/word
     * Docker
     * cURL
     * git
+    * wget
     * fcrackzip
 * Wordlists
     * Rockyou
@@ -43,3 +44,9 @@ Installs tools not found in apt or pip in `~/ctf-tools` and wordlists in `~/word
     * GitTools
 * OSINT tools
     * sherlock
+* Rev tools
+    * Ghidra
+    * IDA
+    * Jadx
+    * Apktool
+    * ILSpy

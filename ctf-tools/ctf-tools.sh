@@ -101,7 +101,7 @@ install_tools () {
     installed
 
     installing "common tools"
-    sudo apt-get -qq install curl git fcrackzip -y
+    sudo apt-get -qq install wget curl git fcrackzip -y
     installed
 }
 
@@ -300,12 +300,71 @@ EOF
     fi
 }
 
-create_directories
-install_tools
-install_wordlists
-install_steg_tools
-install_forensics_tools
-install_web_tools
-install_crypto_tools
-install_misc_tools
-install_osint_tools
+install_rev_tools () {
+    REV_TOOL_PATH=$TOOL_PATH/rev
+    title "Installing rev tools in $REV_TOOL_PATH"
+
+    installing "Ghidra"
+    GHIDRA_VERSION="ghidra_10.0.3_PUBLIC"
+    if [ -d "$REV_TOOL_PATH/$GHIDRA_VERSION" ]; then
+        skipping
+    else
+        wget https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_10.0.3_build/ghidra_10.0.3_PUBLIC_20210908.zip -O /tmp/ghidra.zip -q
+        unzip -qq /tmp/ghidra.zip -d $REV_TOOL_PATH
+        rm /tmp/ghidra.zip
+        ln -s $REV_TOOL_PATH/$GHIDRA_VERSION/ghidraRun $BIN_PATH/ghidra
+        installed
+    fi
+
+    installing "IDA"
+    IDA_VERSION="idafree-7.6"
+    if [ -d "$REV_TOOL_PATH/$IDA_VERSION" ]; then
+        skipping
+    else
+        wget https://out7.hex-rays.com/files/idafree76_linux.run -O /tmp/ida.run -q
+        chmod +x /tmp/ida.run
+        /tmp/ida.run --unattendedmodeui minimal --prefix $REV_TOOL_PATH/$IDA_VERSION --mode unattended
+        rm /tmp/ida.run
+        installed
+    fi
+
+    installing "Jadx"
+    if [ -d "$REV_TOOL_PATH/jadx" ]; then
+        skipping
+    else
+        wget https://github.com/skylot/jadx/releases/download/v1.2.0/jadx-1.2.0.zip -O /tmp/jadx.zip -q
+        unzip -qq /tmp/jadx.zip -d $REV_TOOL_PATH/jadx
+        rm /tmp/jadx.zip
+        ln -s $REV_TOOL_PATH/jadx/bin/jadx $BIN_PATH/jadx
+        ln -s $REV_TOOL_PATH/jadx/bin/jadx-gui $BIN_PATH/jadx-gui
+        installed
+    fi
+
+    installing "Apktool"
+    sudo apt-get -qq install apktool -y
+    installed
+
+    installing "ILSpy"
+    if [ -d "$REV_TOOL_PATH/ILSpy" ]; then
+        skipping
+    else
+        wget https://github.com/icsharpcode/AvaloniaILSpy/releases/download/v7.0-rc2/linux-x64.zip -O /tmp/ilspy.zip -q
+        unzip -qq /tmp/ilspy.zip -d /tmp
+        rm /tmp/ilspy.zip
+        unzip -qq /tmp/ILSpy-linux-x64-Release.zip -d $REV_TOOL_PATH/ilspy
+        rm /tmp/ILSpy-linux-x64-Release.zip
+        ln -s $REV_TOOL_PATH/ilspy/artifacts/linux-x64/ILSpy $BIN_PATH/ILSpy
+        installed
+    fi
+}
+
+# create_directories
+# install_tools
+# install_wordlists
+# install_steg_tools
+# install_forensics_tools
+# install_web_tools
+# install_crypto_tools
+# install_misc_tools
+# install_osint_tools
+install_rev_tools
