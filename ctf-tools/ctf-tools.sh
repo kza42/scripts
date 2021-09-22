@@ -46,6 +46,10 @@ install_pip3_requirements () {
     python3 -m pip install -q -r $1/requirements.txt
 }
 
+apt () {
+    sudo apt-get -qq install $1 -y
+}
+
 create_python3_wrapper () {
     cat <<EOF > $1
 #!/bin/bash
@@ -81,11 +85,11 @@ install_tools () {
     installed
 
     installing "codium"
-    sudo apt-get -qq install codium -y
+    apt codium
     installed
 
     installing "Wireshark"
-    sudo apt-get -qq install wireshark -y
+    apt wireshark
     installed
 
     installing "docker"
@@ -133,7 +137,7 @@ install_steg_tools () {
     sudo apt-get -qq install stegsnow steghide stegseek -y
     installed
     installing "Audacity"
-    sudo apt-get -qq install audacity -y
+    apt audacity
     installed
 
     installing "Stegsolve"
@@ -208,11 +212,11 @@ install_forensics_tools () {
     fi
 
     installing "Binwalk"
-    sudo apt-get -qq install binwalk -y
+    apt binwalk
     installed
 
     installing "Foremost"
-    sudo apt-get -qq install foremost -y
+    apt foremost
     installed
 }
 
@@ -341,7 +345,7 @@ install_rev_tools () {
     fi
 
     installing "Apktool"
-    sudo apt-get -qq install apktool -y
+    apt apktool
     installed
 
     installing "ILSpy"
@@ -351,20 +355,20 @@ install_rev_tools () {
         wget https://github.com/icsharpcode/AvaloniaILSpy/releases/download/v7.0-rc2/linux-x64.zip -O /tmp/ilspy.zip -q
         unzip -qq /tmp/ilspy.zip -d /tmp
         rm /tmp/ilspy.zip
-        unzip -qq /tmp/ILSpy-linux-x64-Release.zip -d $REV_TOOL_PATH/ilspy
+        unzip -qq /tmp/ILSpy-linux-x64-Release.zip -d $REV_TOOL_PATH/ILSpy
         rm /tmp/ILSpy-linux-x64-Release.zip
         ln -s $REV_TOOL_PATH/ilspy/artifacts/linux-x64/ILSpy $BIN_PATH/ILSpy
         installed
     fi
 }
 
-# create_directories
-# install_tools
-# install_wordlists
-# install_steg_tools
-# install_forensics_tools
-# install_web_tools
-# install_crypto_tools
-# install_misc_tools
-# install_osint_tools
+create_directories
+install_tools
+install_wordlists
+install_steg_tools
+install_forensics_tools
+install_web_tools
+install_crypto_tools
+install_misc_tools
+install_osint_tools
 install_rev_tools
