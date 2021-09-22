@@ -1,8 +1,8 @@
 # Install script for various CTF tools
 ## Notes
-Install script for debian based systems, tested on Debian 10.
+Install script for debian based systems, tested on Debian 10 and 11.
 
-Installs tools not found in apt in `~/ctf-tools` and wordlists in `~/wordlists`.
+Installs tools not found in apt or pip in `~/ctf-tools` and wordlists in `~/wordlists`.
 
 ## Tools
 * General
@@ -38,6 +38,7 @@ Installs tools not found in apt in `~/ctf-tools` and wordlists in `~/wordlists`.
 * Crypto tools
     * RsaCtfTool
     * cribdrag
+    * Ciphey
 * Misc tools
     * GitTools
 * OSINT tools

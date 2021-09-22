@@ -31,11 +31,11 @@ git_clone () {
 }
 
 pip2 () {
-    python2.7 -m pip install $1
+    python2.7 -m pip install -q --upgrade $1
 }
 
 pip3 () {
-    python3 -m pip install -q $1
+    python3 -m pip install -q --upgrade $1
 }
 
 install_pip2_requirements () {
@@ -47,15 +47,17 @@ install_pip3_requirements () {
 }
 
 create_python3_wrapper () {
-    echo "#!/bin/bash" > $1
-    echo -n "python3 $2 $" >> $1
-    echo "@" >> $1
+    cat <<EOF > $1
+#!/bin/bash
+python3 $2 \$@
+EOF
 }
 
 create_python2_wrapper () {
-    echo "#!/bin/bash" > $1
-    echo -n "python2.7 $2 $" >> $1
-    echo "@" >> $1
+    cat <<EOF > $1
+#!/bin/bash
+python2.7 $2 \$@
+EOF
 }
 
 create_directories () {
@@ -256,6 +258,10 @@ install_crypto_tools () {
         chmod +x $BIN_PATH/xorstrings
         installed
     fi
+
+    installing "Ciphey"
+    pip3 ciphey
+    installed
 }
 
 install_misc_tools () {
@@ -285,11 +291,10 @@ install_osint_tools () {
     else
         git_clone https://github.com/sherlock-project/sherlock.git $OSINT_TOOL_PATH/sherlock
         docker build -t sherlock $OSINT_TOOL_PATH/sherlock 1>/dev/null
-        echo "#!/bin/bash" > $BIN_PATH/sherlock
-        echo -n "docker run --rm -t -v \"$" >> $BIN_PATH/sherlock
-        echo -n "PWD/results:/opt/sherlock/results\" sherlock -o /opt/sherlock/results/$" >> $BIN_PATH/sherlock
-        echo -n "@.txt $" >> $BIN_PATH/sherlock
-        echo "@" >> $BIN_PATH/sherlock
+        cat <<EOF > $BIN_PATH/sherlock
+#!/bin/bash
+docker run --rm -t -v "$PWD/results:/opt/sherlock/results" sherlock -o /opt/sherlock/results/\$@.txt \$@
+EOF
         chmod +x $BIN_PATH/sherlock
         installed
     fi
