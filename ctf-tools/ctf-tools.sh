@@ -26,8 +26,16 @@ skipping () {
     echo -e "${YELLOW}already installed, skipping${ENDCOLOR}"
 }
 
+upgrading () {
+    echo -ne "${YELLOW}already installed, upgrading ... ${ENDCOLOR}"
+}
+
 git_clone () {
     git clone -q $1 $2
+}
+
+git_pull () {
+    git -C $1 pull -q
 }
 
 pip2 () {
@@ -48,6 +56,12 @@ install_pip3_requirements () {
 
 apt () {
     sudo apt-get -qq install $1 -y
+}
+
+git_upgrade () {
+    upgrading
+    git_pull $1
+    installed
 }
 
 create_python3_wrapper () {
@@ -111,19 +125,22 @@ install_tools () {
 
 install_wordlists () {
     title "Installing wordlists in $WORDLIST_PATH"
+    ROCKYOU_PATH=$WORDLIST_PATH/rockyou.txt
+    SECLISTS_PATH=$WORDLIST_PATH/SecLists
+
     installing "rockyou"
-    if [ -f "$WORDLIST_PATH/rockyou.txt" ]; then
+    if [ -f "$ROCKYOU_PATH" ]; then
         skipping
     else
-        curl -s https://raw.githubusercontent.com/praetorian-inc/Hob0Rules/master/wordlists/rockyou.txt.gz | gunzip > $WORDLIST_PATH/rockyou.txt
+        curl -s https://raw.githubusercontent.com/praetorian-inc/Hob0Rules/master/wordlists/rockyou.txt.gz | gunzip > $ROCKYOU_PATH
         installed
     fi
 
     installing "SecLists"
-    if [ -d "$WORDLIST_PATH/SecLists" ]; then
-        skipping
+    if [ -d "$SECLISTS_PATH" ]; then
+        git_upgrade $SECLISTS_PATH
     else
-        git_clone https://github.com/danielmiessler/SecLists.git $WORDLIST_PATH/SecLists
+        git_clone https://github.com/danielmiessler/SecLists.git $SECLISTS_PATH
         installed
     fi
 }
@@ -149,7 +166,7 @@ install_steg_tools () {
         echo "#!/bin/bash" > $TOOL_PATH/steg/stegsolve/stegsolve.sh
         echo "java -jar $TOOL_PATH/steg/stegsolve/stegsolve.jar" >> $TOOL_PATH/steg/stegsolve/stegsolve.sh
         chmod +x $TOOL_PATH/steg/stegsolve/stegsolve.sh
-        ln -s $TOOL_PATH/steg/stegsolve/stegsolve.sh $BIN_PATH/stegsolve
+        ln -sf $TOOL_PATH/steg/stegsolve/stegsolve.sh $BIN_PATH/stegsolve
         installed
     fi
 }
@@ -170,9 +187,9 @@ install_forensics_tools () {
         unzip -qq $TOOL_PATH/forensics/pdftools/pdftool.zip -d $TOOL_PATH/forensics/pdftools/
         rm $TOOL_PATH/forensics/pdftools/pdf-parser.zip $TOOL_PATH/forensics/pdftools/pdfid.zip $TOOL_PATH/forensics/pdftools/pdftool.zip
         chmod +x $TOOL_PATH/forensics/pdftools/*.py
-        ln -s $TOOL_PATH/forensics/pdftools/pdf-parser.py $BIN_PATH/pdf-parser
-        ln -s $TOOL_PATH/forensics/pdftools/pdfid.py $BIN_PATH/pdfid
-        ln -s $TOOL_PATH/forensics/pdftools/pdftool.py $BIN_PATH/pdftool
+        ln -sf $TOOL_PATH/forensics/pdftools/pdf-parser.py $BIN_PATH/pdf-parser
+        ln -sf $TOOL_PATH/forensics/pdftools/pdfid.py $BIN_PATH/pdfid
+        ln -sf $TOOL_PATH/forensics/pdftools/pdftool.py $BIN_PATH/pdftool
         installed
     fi
 
@@ -182,7 +199,7 @@ install_forensics_tools () {
 
     installing "Volatility 2"
     if [ -d "$TOOL_PATH/forensics/volatility" ]; then
-        skipping
+        git_upgrade $TOOL_PATH/forensics/volatility
     else
         git_clone https://github.com/volatilityfoundation/volatility.git $TOOL_PATH/forensics/volatility
         create_python2_wrapper $BIN_PATH/vol2 $TOOL_PATH/forensics/volatility/vol.py
@@ -192,7 +209,7 @@ install_forensics_tools () {
 
     installing "Volatility 3"
     if [ -d "$TOOL_PATH/forensics/volatility3" ]; then
-        skipping
+        git_upgrade $TOOL_PATH/forensics/volatility3
     else
         git_clone https://github.com/volatilityfoundation/volatility3.git $TOOL_PATH/forensics/volatility3
         create_python3_wrapper $BIN_PATH/vol3 $TOOL_PATH/forensics/volatility3/vol.py
@@ -202,7 +219,7 @@ install_forensics_tools () {
 
     installing "Firepwd"
     if [ -d "$TOOL_PATH/forensics/firepwd" ]; then
-        skipping
+        git_upgrade $TOOL_PATH/forensics/firepwd
     else
         git_clone https://github.com/lclevy/firepwd.git $TOOL_PATH/forensics/firepwd
         install_pip3_requirements $TOOL_PATH/forensics/firepwd
@@ -226,11 +243,11 @@ install_web_tools () {
 
     installing "JWT Tool"
     if [ -d "$WEB_TOOL_PATH/jwt_tool" ]; then
-        skipping
+        git_upgrade $WEB_TOOL_PATH/jwt_tool
     else
         git_clone https://github.com/ticarpi/jwt_tool.git $WEB_TOOL_PATH/jwt_tool
         install_pip3_requirements $WEB_TOOL_PATH/jwt_tool
-        ln -s $WEB_TOOL_PATH/jwt_tool/jwt_tool.py $BIN_PATH/jwt_tool
+        ln -sf $WEB_TOOL_PATH/jwt_tool/jwt_tool.py $BIN_PATH/jwt_tool
         chmod +x $BIN_PATH/jwt_tool
         installed
     fi
@@ -242,18 +259,18 @@ install_crypto_tools () {
 
     installing "RsaCtfTool"
     if [ -d "$CRYPTO_TOOL_PATH/RsaCtfTool" ]; then
-        skipping
+        git_upgrade $CRYPTO_TOOL_PATH/RsaCtfTool
     else
         git_clone https://github.com/Ganapati/RsaCtfTool.git $CRYPTO_TOOL_PATH/RsaCtfTool
         install_pip3_requirements $CRYPTO_TOOL_PATH/RsaCtfTool
-        ln -s $CRYPTO_TOOL_PATH/RsaCtfTool/RsaCtfTool.py $BIN_PATH/RsaCtfTool
+        ln -sf $CRYPTO_TOOL_PATH/RsaCtfTool/RsaCtfTool.py $BIN_PATH/RsaCtfTool
         chmod +x $BIN_PATH/RsaCtfTool
         installed
     fi
 
     installing "cribdrag"
     if [ -d "$CRYPTO_TOOL_PATH/cribdrag" ]; then
-        skipping
+        git_upgrade $CRYPTO_TOOL_PATH/cribdrag
     else
         git_clone https://github.com/SpiderLabs/cribdrag.git $CRYPTO_TOOL_PATH/cribdrag
         create_python2_wrapper $BIN_PATH/cribdrag $CRYPTO_TOOL_PATH/cribdrag/cribdrag.py
@@ -274,12 +291,12 @@ install_misc_tools () {
 
     installing "GitTools"
     if [ -d "$MISC_TOOL_PATH/GitTools" ]; then
-        skipping
+        git_upgrade $MISC_TOOL_PATH/GitTools
     else
         git_clone https://github.com/internetwache/GitTools.git $MISC_TOOL_PATH/GitTools
-        ln -s $MISC_TOOL_PATH/GitTools/Extractor/extractor.sh $BIN_PATH/gitextractor
+        ln -sf $MISC_TOOL_PATH/GitTools/Extractor/extractor.sh $BIN_PATH/gitextractor
         chmod +x $BIN_PATH/gitextractor
-        ln -s $MISC_TOOL_PATH/GitTools/Dumper/gitdumper.sh $BIN_PATH/gitdumper
+        ln -sf $MISC_TOOL_PATH/GitTools/Dumper/gitdumper.sh $BIN_PATH/gitdumper
         chmod +x $BIN_PATH/gitdumper
         installed
     fi
@@ -291,7 +308,7 @@ install_osint_tools () {
 
     installing "sherlock"
     if [ -d "$OSINT_TOOL_PATH/sherlock" ]; then
-        skipping
+        git_upgrade $OSINT_TOOL_PATH/sherlock
     else
         git_clone https://github.com/sherlock-project/sherlock.git $OSINT_TOOL_PATH/sherlock
         docker build -t sherlock $OSINT_TOOL_PATH/sherlock 1>/dev/null
@@ -309,23 +326,23 @@ install_rev_tools () {
     title "Installing rev tools in $REV_TOOL_PATH"
 
     installing "Ghidra"
-    GHIDRA_VERSION="ghidra_10.0.3_PUBLIC"
+    GHIDRA_VERSION="ghidra_10.1.2_PUBLIC"
     if [ -d "$REV_TOOL_PATH/$GHIDRA_VERSION" ]; then
         skipping
     else
-        wget https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_10.0.3_build/ghidra_10.0.3_PUBLIC_20210908.zip -O /tmp/ghidra.zip -q
+        wget https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_10.1.2_build/ghidra_10.1.2_PUBLIC_20220125.zip -O /tmp/ghidra.zip -q
         unzip -qq /tmp/ghidra.zip -d $REV_TOOL_PATH
         rm /tmp/ghidra.zip
-        ln -s $REV_TOOL_PATH/$GHIDRA_VERSION/ghidraRun $BIN_PATH/ghidra
+        ln -sf $REV_TOOL_PATH/$GHIDRA_VERSION/ghidraRun $BIN_PATH/ghidra
         installed
     fi
 
     installing "IDA"
-    IDA_VERSION="idafree-7.6"
+    IDA_VERSION="idafree-7.7"
     if [ -d "$REV_TOOL_PATH/$IDA_VERSION" ]; then
         skipping
     else
-        wget https://out7.hex-rays.com/files/idafree76_linux.run -O /tmp/ida.run -q
+        wget https://out7.hex-rays.com/files/idafree77_linux.run -O /tmp/ida.run -q
         chmod +x /tmp/ida.run
         /tmp/ida.run --unattendedmodeui minimal --prefix $REV_TOOL_PATH/$IDA_VERSION --mode unattended
         rm /tmp/ida.run
@@ -339,8 +356,8 @@ install_rev_tools () {
         wget https://github.com/skylot/jadx/releases/download/v1.2.0/jadx-1.2.0.zip -O /tmp/jadx.zip -q
         unzip -qq /tmp/jadx.zip -d $REV_TOOL_PATH/jadx
         rm /tmp/jadx.zip
-        ln -s $REV_TOOL_PATH/jadx/bin/jadx $BIN_PATH/jadx
-        ln -s $REV_TOOL_PATH/jadx/bin/jadx-gui $BIN_PATH/jadx-gui
+        ln -sf $REV_TOOL_PATH/jadx/bin/jadx $BIN_PATH/jadx
+        ln -sf $REV_TOOL_PATH/jadx/bin/jadx-gui $BIN_PATH/jadx-gui
         installed
     fi
 
@@ -357,7 +374,7 @@ install_rev_tools () {
         rm /tmp/ilspy.zip
         unzip -qq /tmp/ILSpy-linux-x64-Release.zip -d $REV_TOOL_PATH/ILSpy
         rm /tmp/ILSpy-linux-x64-Release.zip
-        ln -s $REV_TOOL_PATH/ilspy/artifacts/linux-x64/ILSpy $BIN_PATH/ILSpy
+        ln -sf $REV_TOOL_PATH/ilspy/artifacts/linux-x64/ILSpy $BIN_PATH/ILSpy
         installed
     fi
 }
